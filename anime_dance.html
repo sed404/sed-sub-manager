@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Anime Dance Video</title>
+  <style>
+    :root {
+      --ink: #17202a;
+      --paper: #fff8f0;
+      --coral: #ff5c7c;
+      --mint: #57d6b9;
+      --gold: #ffd166;
+      --blue: #4da3ff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      color: var(--ink);
+      font-family: "Trebuchet MS", "Microsoft YaHei", sans-serif;
+      background:
+        radial-gradient(circle at 20% 15%, rgba(255, 209, 102, 0.65), transparent 24rem),
+        radial-gradient(circle at 85% 20%, rgba(87, 214, 185, 0.55), transparent 22rem),
+        linear-gradient(135deg, #fff8f0 0%, #ffe8e4 45%, #e9fbff 100%);
+      overflow: hidden;
+    }
+
+    .stage-shell {
+      width: min(96vw, 980px);
+      display: grid;
+      gap: 12px;
+      padding: 14px;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      color: #243447;
+    }
+
+    .title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    button {
+      border: 0;
+      border-radius: 8px;
+      min-height: 40px;
+      padding: 0 14px;
+      font-weight: 800;
+      color: white;
+      background: var(--ink);
+      box-shadow: 0 10px 22px rgba(23, 32, 42, 0.2);
+      cursor: pointer;
+    }
+
+    button.secondary {
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid rgba(23, 32, 42, 0.12);
+    }
+
+    #status {
+      min-width: 148px;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: right;
+    }
+
+    canvas {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      display: block;
+      border-radius: 8px;
+      background: #101820;
+      box-shadow: 0 24px 70px rgba(23, 32, 42, 0.28);
+    }
+
+    @media (max-width: 620px) {
+      .toolbar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .actions {
+        justify-content: space-between;
+      }
+
+      #status {
+        min-width: 0;
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="stage-shell">
+    <div class="toolbar">
+      <h1 class="title">动漫舞台短片</h1>
+      <div class="actions">
+        <button id="record">录制 8 秒 WebM</button>
+        <button class="secondary" id="restart">重播</button>
+        <span id="status">正在播放</span>
+      </div>
+    </div>
+    <canvas id="dance" width="1280" height="720"></canvas>
+  </main>
+
+  <script>
+    const canvas = document.querySelector("#dance");
+    const ctx = canvas.getContext("2d");
+    const statusEl = document.querySelector("#status");
+    const recordButton = document.querySelector("#record");
+    const restartButton = document.querySelector("#restart");
+    let start = performance.now();
+    let recording = false;
+
+    function drawEllipse(x, y, rx, ry, color, rotation = 0) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(rotation);
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawLimb(x1, y1, x2, y2, width, color) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+
+    function drawStar(x, y, r, color, spin) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(spin);
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      for (let i = 0; i < 10; i++) {
+        const radius = i % 2 === 0 ? r : r * 0.42;
+        const angle = (Math.PI * 2 * i) / 10;
+        ctx.lineTo(Math.cos(angle) * radius, Math.sin(angle) * radius);
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function background(t) {
+      const w = canvas.width;
+      const h = canvas.height;
+      const pulse = (Math.sin(t * 3.1) + 1) / 2;
+      const grad = ctx.createLinearGradient(0, 0, w, h);
+      grad.addColorStop(0, "#12172b");
+      grad.addColorStop(0.45, "#202f3b");
+      grad.addColorStop(1, "#102b2f");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.save();
+      ctx.globalAlpha = 0.38 + pulse * 0.22;
+      ctx.fillStyle = "#ff5c7c";
+      ctx.beginPath();
+      ctx.moveTo(w * 0.16, 0);
+      ctx.lineTo(w * 0.38, h * 0.72);
+      ctx.lineTo(w * 0.06, h * 0.72);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "#57d6b9";
+      ctx.beginPath();
+      ctx.moveTo(w * 0.84, 0);
+      ctx.lineTo(w * 0.94, h * 0.72);
+      ctx.lineTo(w * 0.58, h * 0.72);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+
+      for (let i = 0; i < 28; i++) {
+        const x = (i * 97 + Math.sin(t + i) * 24) % w;
+        const y = 56 + ((i * 43) % 260);
+        drawStar(x, y, 5 + (i % 4), i % 2 ? "#ffd166" : "#e9fbff", t * 0.8 + i);
+      }
+
+      ctx.fillStyle = "#0d1118";
+      ctx.fillRect(0, h * 0.72, w, h * 0.28);
+      ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
+      for (let i = 0; i < 9; i++) {
+        ctx.fillRect(0, h * 0.74 + i * 18, w, 2);
+      }
+
+      ctx.save();
+      ctx.globalAlpha = 0.7;
+      ctx.fillStyle = "#ffd166";
+      for (let i = 0; i < 24; i++) {
+        const bar = 20 + Math.abs(Math.sin(t * 4 + i * 0.7)) * 76;
+        ctx.fillRect(76 + i * 48, h - 48 - bar, 18, bar);
+      }
+      ctx.restore();
+    }
+
+    function dancer(t) {
+      const cx = canvas.width / 2 + Math.sin(t * 1.8) * 42;
+      const floor = canvas.height * 0.72;
+      const bounce = Math.sin(t * 5.1) * 16;
+      const hipY = floor - 170 + bounce;
+      const shoulderY = hipY - 112;
+      const headY = shoulderY - 88;
+      const sway = Math.sin(t * 2.7);
+      const beat = Math.sin(t * 5.1);
+
+      ctx.save();
+      ctx.translate(cx, 0);
+
+      ctx.save();
+      ctx.globalAlpha = 0.22;
+      drawEllipse(0, floor + 15, 145, 24, "#57d6b9");
+      ctx.restore();
+
+      const hairSwing = sway * 0.18;
+      drawEllipse(-42, headY + 42, 32, 112, "#26324a", -0.24 + hairSwing);
+      drawEllipse(42, headY + 42, 32, 112, "#26324a", 0.24 + hairSwing);
+      drawEllipse(0, headY + 28, 74, 92, "#2b3755");
+
+      drawLimb(-42, shoulderY + 12, -116 - sway * 40, shoulderY - 58 + beat * 20, 24, "#ffd3c8");
+      drawLimb(-116 - sway * 40, shoulderY - 58 + beat * 20, -142 - sway * 46, shoulderY - 118 + beat * 34, 20, "#ffd3c8");
+      drawLimb(42, shoulderY + 10, 116 + sway * 38, shoulderY - 28 - beat * 26, 24, "#ffd3c8");
+      drawLimb(116 + sway * 38, shoulderY - 28 - beat * 26, 156 + sway * 42, shoulderY - 86 - beat * 32, 20, "#ffd3c8");
+
+      ctx.fillStyle = "#ff5c7c";
+      ctx.beginPath();
+      ctx.moveTo(-60, shoulderY - 12);
+      ctx.quadraticCurveTo(0, shoulderY - 48, 60, shoulderY - 12);
+      ctx.lineTo(48, hipY + 16);
+      ctx.quadraticCurveTo(0, hipY + 44, -48, hipY + 16);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.moveTo(-24, shoulderY - 17);
+      ctx.lineTo(0, shoulderY + 26);
+      ctx.lineTo(24, shoulderY - 17);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = "#4da3ff";
+      for (let i = 0; i < 10; i++) {
+        const a = -Math.PI * 0.92 + i * (Math.PI * 1.84 / 9);
+        ctx.beginPath();
+        ctx.moveTo(0, hipY + 14);
+        ctx.lineTo(Math.cos(a) * 105, hipY + 24 + Math.sin(a) * 40);
+        ctx.lineTo(Math.cos(a + 0.14) * 95, hipY + 70 + Math.sin(a + 0.14) * 24);
+        ctx.closePath();
+        ctx.fill();
+      }
+      drawEllipse(0, hipY + 26, 84, 34, "#4da3ff");
+
+      const leftKneeX = -48 + beat * 18;
+      const rightKneeX = 46 + beat * 20;
+      drawLimb(-34, hipY + 40, leftKneeX, hipY + 134, 25, "#ffd3c8");
+      drawLimb(leftKneeX, hipY + 134, -92 + sway * 28, floor + 2, 22, "#ffd3c8");
+      drawLimb(34, hipY + 40, rightKneeX, hipY + 122, 25, "#ffd3c8");
+      drawLimb(rightKneeX, hipY + 122, 92 + sway * 28, floor - 2, 22, "#ffd3c8");
+      drawEllipse(-96 + sway * 28, floor + 8, 34, 12, "#17202a", -0.08);
+      drawEllipse(98 + sway * 28, floor + 5, 34, 12, "#17202a", 0.08);
+
+      drawEllipse(0, headY, 58, 66, "#ffd3c8");
+      ctx.fillStyle = "#2b3755";
+      ctx.beginPath();
+      ctx.ellipse(0, headY - 38, 66, 42, 0, Math.PI, Math.PI * 2);
+      ctx.fill();
+      drawEllipse(-36, headY - 28, 22, 58, "#2b3755", -0.48);
+      drawEllipse(36, headY - 28, 22, 58, "#2b3755", 0.48);
+
+      ctx.fillStyle = "#17202a";
+      drawEllipse(-20, headY + 4, 7, 10, "#17202a");
+      drawEllipse(20, headY + 4, 7, 10, "#17202a");
+      ctx.strokeStyle = "#d64c65";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(0, headY + 22, 14, 0.08, Math.PI - 0.08);
+      ctx.stroke();
+      drawEllipse(-58, headY - 12, 18, 22, "#ffd3c8");
+      drawEllipse(58, headY - 12, 18, 22, "#ffd3c8");
+      drawStar(-50, headY - 46, 16, "#ffd166", t * 1.8);
+      drawStar(50, headY - 46, 16, "#57d6b9", -t * 1.8);
+
+      ctx.restore();
+    }
+
+    function frame(now) {
+      const t = (now - start) / 1000;
+      background(t);
+      dancer(t);
+      requestAnimationFrame(frame);
+    }
+
+    async function recordClip() {
+      if (recording) return;
+      if (!canvas.captureStream || !window.MediaRecorder) {
+        statusEl.textContent = "当前浏览器不支持录制";
+        return;
+      }
+
+      recording = true;
+      recordButton.disabled = true;
+      statusEl.textContent = "录制中...";
+      const chunks = [];
+      const stream = canvas.captureStream(60);
+      const recorder = new MediaRecorder(stream, { mimeType: "video/webm;codecs=vp9" });
+      recorder.ondataavailable = (event) => {
+        if (event.data.size) chunks.push(event.data);
+      };
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: "video/webm" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "anime-dance.webm";
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+        statusEl.textContent = "已导出 WebM";
+        recordButton.disabled = false;
+        recording = false;
+      };
+      start = performance.now();
+      recorder.start();
+      setTimeout(() => recorder.stop(), 8000);
+    }
+
+    recordButton.addEventListener("click", recordClip);
+    restartButton.addEventListener("click", () => {
+      start = performance.now();
+      statusEl.textContent = "正在播放";
+    });
+
+    requestAnimationFrame(frame);
+  </script>
+</body>
+</html>

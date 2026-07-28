@@ -1,0 +1,37 @@
+# Local configuration and secrets
+config.php
+.user.ini
+.env
+.env.*
+
+# Database dumps: keep only the empty schema
+*.sql
+!database.sql
+
+# User uploads and runtime data
+data/card_claims/*
+!data/card_claims/.htaccess
+data/tickets/*
+!data/tickets/.htaccess
+!data/tickets/index.html
+
+# Deployment archives and extracted backups
+*.zip
+*.rar
+*.7z
+sub.mcxk.cc_etjw8/
+.well-known/
+
+# Personal or unrelated local files
+GITHUB_PROFILE.md
+anime_dance.html
+az.jpg
+pc.jpg
+
+# Local/editor files
+.agents/
+.idea/
+.vscode/
+Thumbs.db
+.DS_Store
+dist/
