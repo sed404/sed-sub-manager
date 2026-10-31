@@ -1,0 +1,5 @@
+# robots.txt - sub.mcxk.cc (节点管理，允许收录)
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /agent/

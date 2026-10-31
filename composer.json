@@ -1,0 +1,6 @@
+{
+  "name": "sed/subscription-panel",
+  "description": "Multi-client subscription panel",
+  "require": { "php": ">=8.1", "symfony/yaml": "^6.4" },
+  "config": { "platform": { "php": "8.1.0" }, "sort-packages": true }
+}

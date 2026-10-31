@@ -1,0 +1,10 @@
+mixed-port: 7890
+allow-lan: false
+mode: rule
+log-level: info
+proxies:
+{{PROXIES}}
+proxy-groups:
+{{PROXY_GROUPS}}
+rules:
+  - MATCH,sed机场管理程序

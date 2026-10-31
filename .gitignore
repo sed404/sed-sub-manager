@@ -1,0 +1,8 @@
+/config.local.php
+/data/*
+!/data/.htaccess
+!/data/index.html
+!/data/clash_yiyuan_template.yml
+*.log
+*.zip
+.env*

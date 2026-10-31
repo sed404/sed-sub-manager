@@ -1,0 +1,8 @@
+/* Scoped article content; the surrounding navigation is the shared user shell. */
+.tutorial-content {line-height:1.8;overflow-wrap:anywhere}.tutorial-content .hero {border-bottom:1px solid var(--line);padding-bottom:16px}.tutorial-content h1 {font-size:18px;margin:0}.tutorial-content .eyebrow {display:none}.tutorial-content .lead {color:var(--muted)}
+.tutorial-toc {display:flex;gap:8px;flex-wrap:wrap;padding:16px 0;border-bottom:1px solid var(--line)}.tutorial-toc a {padding:8px 12px;background:var(--surface-2);border-radius:var(--radius)}
+.tutorial-content h2 {font-size:18px;margin:32px 0 16px}.tutorial-content h3 {font-size:16px;margin:24px 0 12px}.tutorial-content :is(h2,h3,h4) {scroll-margin-top:calc(var(--header-height) + 24px)}
+.tutorial-content .steps {padding-left:24px}.tutorial-content li {margin:8px 0}.tutorial-content .shot {margin:16px 0;padding:12px;border:1px solid var(--line);border-radius:var(--radius);max-width:800px}.tutorial-content .shot img {display:block;width:auto;max-width:100%;height:auto;max-height:640px;object-fit:contain}.tutorial-content figcaption {color:var(--muted);font-size:12px;padding-top:8px}
+.tutorial-content :is(.notice,.callout) {padding:16px;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius);margin:16px 0}.tutorial-content .callout strong {display:block}.tutorial-content .url-box {display:block;padding:12px;overflow-wrap:anywhere;white-space:normal}.tutorial-content hr {margin:24px 0;border:0;border-top:1px solid var(--line)}
+
+.tutorial-section {scroll-margin-top:calc(var(--header-height) + 24px)}
